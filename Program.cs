@@ -101,6 +101,8 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.WebHost.UseUrls("http://0.0.0.0:5107");
+
 var app = builder.Build();
 
 // Middleware de manejo de errores (debe estar primero)
