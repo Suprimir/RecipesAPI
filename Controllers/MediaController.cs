@@ -19,7 +19,79 @@ namespace RecipesAPI.Controllers
         }
 
         /// <summary>
-        /// Sube una imagen al servidor
+        /// Sube una imagen de perfil de usuario
+        /// </summary>
+        /// <param name="file">Archivo de imagen (JPEG/PNG)</param>
+        /// <returns>Información de la imagen subida</returns>
+        [HttpPost("upload/profile")]
+        [Consumes("multipart/form-data")]
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [RequestSizeLimit(5 * 1024 * 1024)] // 5MB
+        public async Task<ActionResult> UploadProfileImage(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { message = "No se proporcionó ningún archivo" });
+
+            if (!_fileStorageService.IsValidImageFile(file))
+                return BadRequest(new { message = "Archivo inválido. Solo se permiten imágenes JPG, JPEG, PNG, GIF, WEBP de máximo 5MB" });
+
+            try
+            {
+                var imageUrl = await _fileStorageService.SaveImageAsync(file, "profile");
+                return Ok(new
+                {
+                    id = Guid.NewGuid().ToString(),
+                    url = imageUrl,
+                    type = file.ContentType,
+                    size = file.Length
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error al subir la imagen", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Sube una imagen de banner para el perfil de usuario
+        /// </summary>
+        /// <param name="file">Archivo de imagen (JPEG/PNG)</param>
+        /// <returns>Información de la imagen subida</returns>
+        [HttpPost("upload/banner")]
+        [Consumes("multipart/form-data")]
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [RequestSizeLimit(5 * 1024 * 1024)] // 5MB
+        public async Task<ActionResult> UploadBannerImage(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { message = "No se proporcionó ningún archivo" });
+
+            if (!_fileStorageService.IsValidImageFile(file))
+                return BadRequest(new { message = "Archivo inválido. Solo se permiten imágenes JPG, JPEG, PNG, GIF, WEBP de máximo 5MB" });
+
+            try
+            {
+                var imageUrl = await _fileStorageService.SaveImageAsync(file, "profile");
+                return Ok(new
+                {
+                    id = Guid.NewGuid().ToString(),
+                    url = imageUrl,
+                    type = file.ContentType,
+                    size = file.Length
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error al subir la imagen", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Sube una imagen al servidor (genérico)
         /// </summary>
         /// <param name="request">Datos del archivo a subir</param>
         /// <returns>URL de la imagen subida</returns>

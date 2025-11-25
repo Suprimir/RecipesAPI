@@ -41,6 +41,9 @@ namespace RecipesAPI.Services
             if (dto.ProfileImageUrl != null)
                 user.ProfileImageUrl = dto.ProfileImageUrl;
 
+            if (dto.BannerImageUrl != null)
+                user.BannerImageUrl = dto.BannerImageUrl;
+
             await _userRepository.UpdateAsync(user);
 
             return await GetUserProfileAsync(userId);

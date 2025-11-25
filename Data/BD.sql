@@ -17,6 +17,7 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     bio TEXT,
     profile_image_url VARCHAR(500),
+    banner_image_url VARCHAR(500),
     is_email_verified BOOLEAN DEFAULT FALSE,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

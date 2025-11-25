@@ -10,5 +10,9 @@ namespace RecipesAPI.DTOs
         [Url(ErrorMessage = "La URL de la imagen de perfil no es válida")]
         [StringLength(500, ErrorMessage = "La URL no puede exceder 500 caracteres")]
         public string? ProfileImageUrl { get; set; }
+
+        [Url(ErrorMessage = "La URL de la imagen de banner no es válida")]
+        [StringLength(500, ErrorMessage = "La URL no puede exceder 500 caracteres")]
+        public string? BannerImageUrl { get; set; }
     }
 }

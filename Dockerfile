@@ -31,10 +31,10 @@ RUN mkdir -p /app/wwwroot/uploads/recipe && \
     chmod -R 755 /app/wwwroot
 
 # Exponer el puerto
-EXPOSE 8080
+EXPOSE 5107
 
 # Variable de entorno para ASP.NET Core
-ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_URLS=http://+:5107
 ENV ASPNETCORE_ENVIRONMENT=Production
 
 ENTRYPOINT ["dotnet", "RecipesAPI.dll"]

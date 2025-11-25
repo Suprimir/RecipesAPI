@@ -8,6 +8,7 @@ namespace RecipesAPI.Models
         public string PasswordHash { get; set; } = string.Empty;
         public string? Bio { get; set; }
         public string? ProfileImageUrl { get; set; }
+        public string? BannerImageUrl { get; set; }
         public bool IsEmailVerified { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }

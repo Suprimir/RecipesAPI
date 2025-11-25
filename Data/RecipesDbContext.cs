@@ -162,6 +162,10 @@ namespace RecipesAPI.Data
                     .HasColumnName("profile_image_url")
                     .HasMaxLength(500);
 
+                entity.Property(e => e.BannerImageUrl)
+                    .HasColumnName("banner_image_url")
+                    .HasMaxLength(500);
+
                 entity.Property(e => e.IsEmailVerified)
                     .HasColumnName("is_email_verified")
                     .HasDefaultValue(false);
