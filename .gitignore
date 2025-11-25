@@ -45,4 +45,14 @@ artifacts/
 
 # Environment files
 *.env
+!.env.example
 appsettings.Development.json
+
+# Docker
+docker-compose.override.yml
+*.sql.backup
+backup_*.sql
+
+# Uploads folder (imágenes subidas por usuarios)
+wwwroot/uploads/**
+!wwwroot/uploads/.gitkeep

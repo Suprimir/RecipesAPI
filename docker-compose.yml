@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: recipesapi_postgres
+    environment:
+      POSTGRES_DB: recipesdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./Data/BD.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks:
+      - recipes_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d recipesdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # API de Recetas
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: recipesapi
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=recipesdb;Username=postgres;Password=postgres123;
+      - Jwt__Key=tu_clave_super_secreta_de_al_menos_32_caracteres_para_jwt_token
+      - Jwt__Issuer=RecipesAPI
+      - Jwt__Audience=RecipesAPIUsers
+      - Jwt__ExpiryMinutes=60
+    ports:
+      - "5000:8080"
+    volumes:
+      - uploads_data:/app/wwwroot/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - recipes_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/categories"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+networks:
+  recipes_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  uploads_data:
+    driver: local
