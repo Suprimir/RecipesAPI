@@ -66,6 +66,12 @@ builder.Services.AddScoped<IFollowService, FollowService>();
 
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
+builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+builder.Services.AddScoped<ICommentService, CommentService>();
+
+builder.Services.AddScoped<ILikeRepository, LikeRepository>();
+builder.Services.AddScoped<ILikeService, LikeService>();
+
 // Agregar controladores
 builder.Services.AddControllers();
 

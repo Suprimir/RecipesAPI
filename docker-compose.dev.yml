@@ -22,6 +22,37 @@ services:
       retries: 5
     restart: unless-stopped
 
+  # API de Recetas (desarrollo)
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: recipesapi_dev
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5107
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=recipesdb;Username=postgres;Password=postgres123;
+      - Jwt__Key=tu_clave_super_secreta_de_al_menos_32_caracteres_para_jwt_token
+      - Jwt__Issuer=RecipesAPI
+      - Jwt__Audience=RecipesAPIUsers
+      - Jwt__ExpiryMinutes=60
+    ports:
+      - "5107:5107"
+    volumes:
+      - uploads_dev_data:/app/wwwroot/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - recipes_network_dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5107/api/categories"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
   # pgAdmin para administración de base de datos
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -48,4 +79,6 @@ volumes:
   postgres_dev_data:
     driver: local
   pgadmin_data:
+    driver: local
+  uploads_dev_data:
     driver: local

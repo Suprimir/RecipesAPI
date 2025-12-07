@@ -230,6 +230,39 @@ CREATE INDEX idx_ratings_user_id ON ratings(user_id);
 CREATE INDEX idx_ratings_rating ON ratings(rating);
 
 -- ============================================
+-- TABLA: recipe_likes (likes independientes de favorites)
+-- ============================================
+CREATE TABLE recipe_likes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    recipe_id UUID NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE(user_id, recipe_id)
+);
+
+CREATE INDEX idx_recipe_likes_recipe_id ON recipe_likes(recipe_id);
+CREATE INDEX idx_recipe_likes_user_id ON recipe_likes(user_id);
+
+-- ============================================
+-- TABLA: recipe_comments (comentarios con threading opcional)
+-- ============================================
+CREATE TABLE recipe_comments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    recipe_id UUID NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    content VARCHAR(1000) NOT NULL,
+    parent_comment_id UUID REFERENCES recipe_comments(id) ON DELETE CASCADE,
+    is_edited BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_recipe_comments_recipe_id ON recipe_comments(recipe_id);
+CREATE INDEX idx_recipe_comments_user_id ON recipe_comments(user_id);
+CREATE INDEX idx_recipe_comments_parent_comment_id ON recipe_comments(parent_comment_id);
+
+-- ============================================
 -- TABLA: follows
 -- ============================================
 -- (Se mantiene/crea aquí para el esquema global)
@@ -364,6 +397,10 @@ CREATE TRIGGER update_recipe_steps_updated_at
 
 CREATE TRIGGER update_ratings_updated_at 
     BEFORE UPDATE ON ratings
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_recipe_comments_updated_at
+    BEFORE UPDATE ON recipe_comments
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================

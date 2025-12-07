@@ -8,12 +8,24 @@ namespace RecipesAPI.Services
     public class RecipeService : IRecipeService
     {
         private readonly IRecipeRepository _recipeRepository;
+        private readonly IRatingRepository _ratingRepository;
+        private readonly ILikeRepository _likeRepository;
+        private readonly ICommentRepository _commentRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<RecipeService> _logger;
 
-        public RecipeService(IRecipeRepository recipeRepository, IMapper mapper, ILogger<RecipeService> logger)
+        public RecipeService(
+            IRecipeRepository recipeRepository,
+            IRatingRepository ratingRepository,
+            ILikeRepository likeRepository,
+            ICommentRepository commentRepository,
+            IMapper mapper,
+            ILogger<RecipeService> logger)
         {
             _recipeRepository = recipeRepository;
+            _ratingRepository = ratingRepository;
+            _likeRepository = likeRepository;
+            _commentRepository = commentRepository;
             _mapper = mapper;
             _logger = logger;
         }
@@ -226,17 +238,23 @@ namespace RecipesAPI.Services
 
         public async Task<RecipeStatsDTO?> GetRecipeStatsAsync(Guid id)
         {
-            var exists = await _recipeRepository.ExistsAsync(id);
-            if (!exists) return null;
+            var recipe = await _recipeRepository.GetByIdAsync(id);
+            if (recipe == null) return null;
 
-            // TODO: Implementar estadísticas reales cuando se agreguen las tablas de ratings y views
+            var averageRating = await _ratingRepository.GetRecipeAverageRatingAsync(id);
+            var ratingsCount = await _ratingRepository.GetRecipeRatingsCountAsync(id);
+            var likesCount = await _likeRepository.GetLikesCountAsync(id);
+            var commentsCount = await _commentRepository.CountByRecipeAsync(id);
+
             return new RecipeStatsDTO
             {
                 RecipeId = id,
                 ViewsCount = 0,
-                FavoritesCount = 0,
-                AverageRating = 0,
-                RatingsCount = 0
+                FavoritesCount = recipe.FavoritesCount,
+                AverageRating = averageRating,
+                RatingsCount = ratingsCount,
+                LikesCount = likesCount,
+                CommentsCount = commentsCount
             };
         }
     }

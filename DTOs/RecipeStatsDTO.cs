@@ -7,5 +7,7 @@ namespace RecipesAPI.DTOs
         public int FavoritesCount { get; set; }
         public double AverageRating { get; set; }
         public int RatingsCount { get; set; }
+        public int CommentsCount { get; set; }
+        public int LikesCount { get; set; }
     }
 }

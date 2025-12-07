@@ -56,6 +56,10 @@ namespace RecipesAPI.Mappings
 
             CreateMap<RecipeIngredient, RecipeIngredientDTO>()
                 .ForMember(dest => dest.IngredientName, opt => opt.MapFrom(src => src.Ingredient != null ? src.Ingredient.Name : string.Empty));
+
+            CreateMap<RecipeComment, CommentDTO>()
+                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.User != null ? src.User.Username : string.Empty))
+                .ForMember(dest => dest.RepliesCount, opt => opt.MapFrom(src => src.Replies != null ? src.Replies.Count : 0));
         }
     }
 }
