@@ -9,15 +9,21 @@ namespace RecipesAPI.Services
         private readonly IFollowRepository _followRepository;
         private readonly IUserRepository _userRepository;
         private readonly IRecipeRepository _recipeRepository;
+        private readonly ILikeRepository _likeRepository;
+        private readonly ICommentRepository _commentRepository;
 
         public FollowService(
             IFollowRepository followRepository,
             IUserRepository userRepository,
-            IRecipeRepository recipeRepository)
+            IRecipeRepository recipeRepository,
+            ILikeRepository likeRepository,
+            ICommentRepository commentRepository)
         {
             _followRepository = followRepository;
             _userRepository = userRepository;
             _recipeRepository = recipeRepository;
+            _likeRepository = likeRepository;
+            _commentRepository = commentRepository;
         }
 
         public async Task<IEnumerable<FollowUserDTO>> GetFollowersAsync(Guid userId, int page, int limit)
@@ -94,29 +100,28 @@ namespace RecipesAPI.Services
         {
             // Obtener los usuarios que sigue
             var following = await _followRepository.GetFollowingAsync(userId, 1, 1000);
-            var followingIds = following.Select(f => f.FollowingId).ToList();
+            var followingIds = following.Select(f => f.FollowingId).Distinct().ToList();
 
             if (!followingIds.Any())
-                return new List<RecipeDTO>();
-
-            // Obtener recetas públicas de los usuarios seguidos, ordenadas por fecha
-            var allRecipes = new List<Recipe>();
-
-            foreach (var followingId in followingIds)
             {
-                var recipes = await _recipeRepository.GetByUserIdAsync(followingId);
-                allRecipes.AddRange(recipes.Where(r => r.IsPublic));
+                return Enumerable.Empty<RecipeDTO>();
             }
 
-            // Ordenar por fecha de publicación (más reciente primero) y paginar
-            var paginatedRecipes = allRecipes
-                .OrderByDescending(r => r.PublishedAt ?? r.CreatedAt)
-                .Skip((page - 1) * limit)
-                .Take(limit)
-                .ToList();
+            var recipes = (await _recipeRepository.GetPublicByUserIdsAsync(followingIds, page, limit)).ToList();
+
+            if (!recipes.Any())
+            {
+                return Enumerable.Empty<RecipeDTO>();
+            }
+
+            var recipeIds = recipes.Select(r => r.Id).ToList();
+
+            // Serializamos consultas para evitar concurrencia sobre el mismo DbContext
+            var likes = await _likeRepository.GetLikesCountAsync(recipeIds);
+            var comments = await _commentRepository.CountByRecipesAsync(recipeIds);
 
             // Convertir a DTOs
-            return paginatedRecipes.Select(r => new RecipeDTO
+            return recipes.Select(r => new RecipeDTO
             {
                 Id = r.Id,
                 UserId = r.UserId,
@@ -132,6 +137,8 @@ namespace RecipesAPI.Services
                 DifficultyLevel = r.DifficultyLevel,
                 IsPublic = r.IsPublic,
                 FavoritesCount = r.FavoritesCount,
+                LikesCount = likes.TryGetValue(r.Id, out var l) ? l : 0,
+                CommentsCount = comments.TryGetValue(r.Id, out var c) ? c : 0,
                 CreatedAt = r.CreatedAt,
                 PublishedAt = r.PublishedAt
             });

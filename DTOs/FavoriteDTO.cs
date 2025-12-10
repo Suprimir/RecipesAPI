@@ -6,15 +6,20 @@ namespace RecipesAPI.DTOs
     public class FavoriteDTO
     {
         public Guid Id { get; set; }
+        public Guid UserId { get; set; }
         public Guid RecipeId { get; set; }
         public string RecipeTitle { get; set; } = string.Empty;
         public string? RecipeDescription { get; set; }
         public string? CoverImageUrl { get; set; }
         public string Username { get; set; } = string.Empty;
+        public int? CategoryId { get; set; }
         public string? CategoryName { get; set; }
         public string DifficultyLevel { get; set; } = string.Empty;
         public int? TotalTimeMinutes { get; set; }
         public int FavoritesCount { get; set; }
+        public int LikesCount { get; set; }
+        public int CommentsCount { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime? PublishedAt { get; set; }
     }
 }

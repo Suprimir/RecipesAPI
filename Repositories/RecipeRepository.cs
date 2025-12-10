@@ -86,8 +86,23 @@ namespace RecipesAPI.Repositories
         {
             return await _context.Recipes
                 .Include(r => r.Category)
-                .Where(r => r.UserId == userId)
+                .Where(r => r.UserId == userId && r.IsPublic)
                 .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Recipe>> GetPublicByUserIdsAsync(IEnumerable<Guid> userIds, int page, int limit)
+        {
+            var ids = userIds.Distinct().ToList();
+            if (!ids.Any()) return Enumerable.Empty<Recipe>();
+
+            return await _context.Recipes
+                .Include(r => r.Category)
+                .Include(r => r.User)
+                .Where(r => ids.Contains(r.UserId) && r.IsPublic)
+                .OrderByDescending(r => r.PublishedAt ?? r.CreatedAt)
+                .Skip((page - 1) * limit)
+                .Take(limit)
                 .ToListAsync();
         }
 

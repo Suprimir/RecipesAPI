@@ -59,6 +59,16 @@ namespace RecipesAPI.Repositories
             return await _context.RecipeComments.CountAsync(c => c.RecipeId == recipeId);
         }
 
+        public async Task<Dictionary<Guid, int>> CountByRecipesAsync(IEnumerable<Guid> recipeIds)
+        {
+            var ids = recipeIds.Distinct().ToList();
+            return await _context.RecipeComments
+                .Where(c => ids.Contains(c.RecipeId))
+                .GroupBy(c => c.RecipeId)
+                .Select(g => new { RecipeId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.RecipeId, x => x.Count);
+        }
+
         public async Task<RecipeComment> AddAsync(RecipeComment comment)
         {
             comment.CreatedAt = DateTime.UtcNow;

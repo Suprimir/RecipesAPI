@@ -9,7 +9,5 @@ namespace RecipesAPI.DTOs
         public int FollowersCount { get; set; }
         public int FollowingCount { get; set; }
         public int TotalFavoritesReceived { get; set; }
-        public int TotalRatingsReceived { get; set; }
-        public double AverageRating { get; set; }
     }
 }

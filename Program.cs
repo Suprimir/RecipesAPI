@@ -58,9 +58,6 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFavoriteRepository, FavoriteRepository>();
 builder.Services.AddScoped<IFavoriteService, FavoriteService>();
 
-builder.Services.AddScoped<IRatingRepository, RatingRepository>();
-builder.Services.AddScoped<IRatingService, RatingService>();
-
 builder.Services.AddScoped<IFollowRepository, FollowRepository>();
 builder.Services.AddScoped<IFollowService, FollowService>();
 

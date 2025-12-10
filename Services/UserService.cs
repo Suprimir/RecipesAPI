@@ -67,9 +67,7 @@ namespace RecipesAPI.Services
                 PrivateRecipesCount = await _userRepository.GetPrivateRecipesCountAsync(userId),
                 FollowersCount = await _userRepository.GetFollowersCountAsync(userId),
                 FollowingCount = await _userRepository.GetFollowingCountAsync(userId),
-                TotalFavoritesReceived = await _userRepository.GetTotalFavoritesReceivedAsync(userId),
-                AverageRating = 0, // TODO: Implementar cuando se creen las valoraciones
-                TotalRatingsReceived = 0 // TODO: Implementar cuando se creen las valoraciones
+                TotalFavoritesReceived = await _userRepository.GetTotalFavoritesReceivedAsync(userId)
             };
 
             return stats;

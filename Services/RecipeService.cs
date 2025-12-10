@@ -8,7 +8,6 @@ namespace RecipesAPI.Services
     public class RecipeService : IRecipeService
     {
         private readonly IRecipeRepository _recipeRepository;
-        private readonly IRatingRepository _ratingRepository;
         private readonly ILikeRepository _likeRepository;
         private readonly ICommentRepository _commentRepository;
         private readonly IMapper _mapper;
@@ -16,14 +15,12 @@ namespace RecipesAPI.Services
 
         public RecipeService(
             IRecipeRepository recipeRepository,
-            IRatingRepository ratingRepository,
             ILikeRepository likeRepository,
             ICommentRepository commentRepository,
             IMapper mapper,
             ILogger<RecipeService> logger)
         {
             _recipeRepository = recipeRepository;
-            _ratingRepository = ratingRepository;
             _likeRepository = likeRepository;
             _commentRepository = commentRepository;
             _mapper = mapper;
@@ -36,6 +33,9 @@ namespace RecipesAPI.Services
             if (recipe == null) return null;
 
             var dto = _mapper.Map<RecipeDTO>(recipe);
+
+            dto.LikesCount = await _likeRepository.GetLikesCountAsync(recipe.Id);
+            dto.CommentsCount = await _commentRepository.CountByRecipeAsync(recipe.Id);
 
             if (includeDetails)
             {
@@ -58,13 +58,50 @@ namespace RecipesAPI.Services
             string? search)
         {
             var recipes = await _recipeRepository.GetAllAsync(page, limit, sort, newest, categoryId, difficulty, maxTime, search);
-            return recipes.Select(_mapper.Map<RecipeDTO>);
+            var list = recipes.ToList();
+
+            if (!list.Any())
+            {
+                return Enumerable.Empty<RecipeDTO>();
+            }
+
+            var ids = list.Select(r => r.Id).ToList();
+
+            // Ejecutar en secuencia para evitar concurrencia sobre el mismo DbContext
+            var likes = await _likeRepository.GetLikesCountAsync(ids);
+            var comments = await _commentRepository.CountByRecipesAsync(ids);
+
+            return list.Select(r =>
+            {
+                var dto = _mapper.Map<RecipeDTO>(r);
+                dto.LikesCount = likes.TryGetValue(r.Id, out var l) ? l : 0;
+                dto.CommentsCount = comments.TryGetValue(r.Id, out var c) ? c : 0;
+                return dto;
+            });
         }
 
         public async Task<IEnumerable<RecipeDTO>> GetRecipesByUserIdAsync(Guid userId)
         {
-            var recipes = await _recipeRepository.GetByUserIdAsync(userId);
-            return recipes.Select(_mapper.Map<RecipeDTO>);
+            var recipes = (await _recipeRepository.GetByUserIdAsync(userId)).ToList();
+
+            if (!recipes.Any())
+            {
+                return Enumerable.Empty<RecipeDTO>();
+            }
+
+            var ids = recipes.Select(r => r.Id).ToList();
+
+            // Serializamos las consultas para evitar concurrencia en el mismo DbContext
+            var likes = await _likeRepository.GetLikesCountAsync(ids);
+            var comments = await _commentRepository.CountByRecipesAsync(ids);
+
+            return recipes.Select(r =>
+            {
+                var dto = _mapper.Map<RecipeDTO>(r);
+                dto.LikesCount = likes.TryGetValue(r.Id, out var l) ? l : 0;
+                dto.CommentsCount = comments.TryGetValue(r.Id, out var c) ? c : 0;
+                return dto;
+            });
         }
 
         public async Task<RecipeDTO> CreateRecipeAsync(CreateRecipeDTO dto, Guid userId)
@@ -241,8 +278,6 @@ namespace RecipesAPI.Services
             var recipe = await _recipeRepository.GetByIdAsync(id);
             if (recipe == null) return null;
 
-            var averageRating = await _ratingRepository.GetRecipeAverageRatingAsync(id);
-            var ratingsCount = await _ratingRepository.GetRecipeRatingsCountAsync(id);
             var likesCount = await _likeRepository.GetLikesCountAsync(id);
             var commentsCount = await _commentRepository.CountByRecipeAsync(id);
 
@@ -251,8 +286,6 @@ namespace RecipesAPI.Services
                 RecipeId = id,
                 ViewsCount = 0,
                 FavoritesCount = recipe.FavoritesCount,
-                AverageRating = averageRating,
-                RatingsCount = ratingsCount,
                 LikesCount = likesCount,
                 CommentsCount = commentsCount
             };

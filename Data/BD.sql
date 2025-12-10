@@ -208,28 +208,6 @@ CREATE INDEX idx_favorites_user_id ON favorites(user_id, created_at DESC);
 CREATE INDEX idx_favorites_recipe_id ON favorites(recipe_id);
 
 -- ============================================
--- TABLA: ratings
--- ============================================
-CREATE TABLE ratings (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    recipe_id UUID NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
-    
-    rating INTEGER NOT NULL,
-    review TEXT,
-    
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    
-    CONSTRAINT rating_range CHECK (rating >= 1 AND rating <= 5),
-    UNIQUE(user_id, recipe_id)
-);
-
-CREATE INDEX idx_ratings_recipe_id ON ratings(recipe_id);
-CREATE INDEX idx_ratings_user_id ON ratings(user_id);
-CREATE INDEX idx_ratings_rating ON ratings(rating);
-
--- ============================================
 -- TABLA: recipe_likes (likes independientes de favorites)
 -- ============================================
 CREATE TABLE recipe_likes (
@@ -393,10 +371,6 @@ CREATE TRIGGER update_recipes_updated_at
 
 CREATE TRIGGER update_recipe_steps_updated_at 
     BEFORE UPDATE ON recipe_steps
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_ratings_updated_at 
-    BEFORE UPDATE ON ratings
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_recipe_comments_updated_at
@@ -594,6 +568,5 @@ COMMENT ON COLUMN recipe_steps.step_type IS 'Tipo de paso: preparation, cutting,
 COMMENT ON TABLE ingredients IS 'Catálogo de ingredientes disponibles';
 COMMENT ON TABLE recipe_ingredients IS 'Ingredientes específicos de cada receta con cantidades';
 COMMENT ON TABLE favorites IS 'Recetas marcadas como favoritas por usuarios';
-COMMENT ON TABLE ratings IS 'Calificaciones de 1-5 estrellas para recetas';
 COMMENT ON TABLE follows IS 'Relación de seguimiento entre usuarios';
 COMMENT ON TABLE notifications IS 'Notificaciones del sistema para usuarios';

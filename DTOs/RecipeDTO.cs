@@ -19,6 +19,8 @@ namespace RecipesAPI.DTOs
         public string DifficultyLevel { get; set; } = "easy";
         public bool IsPublic { get; set; }
         public int FavoritesCount { get; set; }
+        public int LikesCount { get; set; }
+        public int CommentsCount { get; set; }
 
         public DateTime CreatedAt { get; set; }
         public DateTime? PublishedAt { get; set; }

@@ -12,6 +12,7 @@ namespace RecipesAPI.Repositories
         Task<bool> DeleteAsync(Guid id);
         Task<bool> ExistsAsync(Guid id);
         Task PublishAsync(Guid id);
+        Task<IEnumerable<Recipe>> GetPublicByUserIdsAsync(IEnumerable<Guid> userIds, int page, int limit);
 
         // Recipe Steps
         Task<IEnumerable<RecipeStep>> GetStepsByRecipeIdAsync(Guid recipeId);

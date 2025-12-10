@@ -18,6 +18,16 @@ namespace RecipesAPI.Repositories
             return await _context.RecipeLikes.CountAsync(l => l.RecipeId == recipeId);
         }
 
+        public async Task<Dictionary<Guid, int>> GetLikesCountAsync(IEnumerable<Guid> recipeIds)
+        {
+            var ids = recipeIds.Distinct().ToList();
+            return await _context.RecipeLikes
+                .Where(l => ids.Contains(l.RecipeId))
+                .GroupBy(l => l.RecipeId)
+                .Select(g => new { RecipeId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.RecipeId, x => x.Count);
+        }
+
         public async Task<bool> UserLikedAsync(Guid recipeId, Guid userId)
         {
             return await _context.RecipeLikes.AnyAsync(l => l.RecipeId == recipeId && l.UserId == userId);

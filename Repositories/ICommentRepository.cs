@@ -9,6 +9,7 @@ namespace RecipesAPI.Repositories
         Task<RecipeComment?> GetByIdAsync(Guid recipeId, Guid commentId);
         Task<RecipeComment?> GetParentAsync(Guid parentId);
         Task<int> CountByRecipeAsync(Guid recipeId);
+        Task<Dictionary<Guid, int>> CountByRecipesAsync(IEnumerable<Guid> recipeIds);
         Task<RecipeComment> AddAsync(RecipeComment comment);
         Task<RecipeComment> UpdateAsync(RecipeComment comment);
         Task<bool> DeleteAsync(Guid commentId);

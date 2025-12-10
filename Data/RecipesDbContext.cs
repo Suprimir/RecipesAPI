@@ -21,7 +21,6 @@ namespace RecipesAPI.Data
         public DbSet<RecipeIngredient> RecipeIngredients { get; set; }
         public DbSet<RecipeTag> RecipeTags { get; set; }
         public DbSet<Favorite> Favorites { get; set; }
-        public DbSet<Rating> Ratings { get; set; }
         public DbSet<Follow> Follows { get; set; }
         public DbSet<RecipeComment> RecipeComments { get; set; }
         public DbSet<RecipeLike> RecipeLikes { get; set; }
@@ -585,62 +584,6 @@ namespace RecipesAPI.Data
 
                 entity.HasIndex(e => e.UserId)
                     .HasDatabaseName("idx_recipe_likes_user_id");
-            });
-
-            modelBuilder.Entity<Rating>(entity =>
-            {
-                entity.ToTable("ratings");
-
-                entity.HasKey(e => e.Id);
-
-                entity.Property(e => e.Id)
-                    .HasColumnName("id")
-                    .HasDefaultValueSql("uuid_generate_v4()");
-
-                entity.Property(e => e.UserId)
-                    .HasColumnName("user_id")
-                    .IsRequired();
-
-                entity.Property(e => e.RecipeId)
-                    .HasColumnName("recipe_id")
-                    .IsRequired();
-
-                entity.Property(e => e.RatingValue)
-                    .HasColumnName("rating")
-                    .IsRequired();
-
-                entity.Property(e => e.Review)
-                    .HasColumnName("review");
-
-                entity.Property(e => e.CreatedAt)
-                    .HasColumnName("created_at")
-                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                entity.Property(e => e.UpdatedAt)
-                    .HasColumnName("updated_at")
-                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                entity.HasOne(e => e.User)
-                    .WithMany()
-                    .HasForeignKey(e => e.UserId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasOne(e => e.Recipe)
-                    .WithMany()
-                    .HasForeignKey(e => e.RecipeId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasIndex(e => new { e.UserId, e.RecipeId })
-                    .IsUnique();
-
-                entity.HasIndex(e => e.RecipeId)
-                    .HasDatabaseName("idx_ratings_recipe_id");
-
-                entity.HasIndex(e => e.UserId)
-                    .HasDatabaseName("idx_ratings_user_id");
-
-                entity.HasIndex(e => e.RatingValue)
-                    .HasDatabaseName("idx_ratings_rating");
             });
 
             modelBuilder.Entity<RecipeComment>(entity =>
